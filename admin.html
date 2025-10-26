@@ -21,10 +21,7 @@
       z-index: 50;
       transition: opacity 0.4s ease, visibility 0.4s ease;
     }
-    #loginOverlay.fadeOut {
-      opacity: 0;
-      visibility: hidden;
-    }
+    #loginOverlay.fadeOut { opacity: 0; visibility: hidden; }
     #loginBox {
       background: white;
       border-radius: 0.75rem;
@@ -65,12 +62,12 @@
       <div class="bg-white rounded-xl shadow p-6 space-y-6">
         <div>
           <h2 class="text-lg font-semibold mb-2">Voting Control</h2>
-          <p class="text-sm text-slate-500 mb-4">Toggle to pause or resume voting. This affects all open survey tabs on <strong>this device</strong>.</p>
+          <p class="text-sm text-slate-500 mb-4">Controls affect all open survey tabs on this device. Mobile compatibility is improved using storage polling.</p>
           <div class="flex items-center gap-4">
             <div id="toggle" class="toggle"><div class="knob"></div></div>
             <div>
               <div class="text-sm font-semibold">Status: <span id="statusText">Unknown</span></div>
-              <div class="text-xs text-slate-500">Broadcasting via <code>BroadcastChannel</code> + <code>localStorage</code>.</div>
+              <div class="text-xs text-slate-500">Sync via <code>BroadcastChannel</code>, <code>localStorage</code> events, and polling.</div>
             </div>
           </div>
         </div>
@@ -85,7 +82,7 @@
         </div>
 
         <div class="text-xs text-slate-500">
-          Note: “Clear Local State” only clears pause flag and local survey answers on this browser.
+          “Clear Local State” resets pause flag and survey answers on this browser.
         </div>
       </div>
     </div>
@@ -146,8 +143,9 @@
 
     if (isLoggedIn()) showAdmin(); else showLogin();
 
-    // ===== Admin Logic =====
+    // ===== Admin Functions =====
     const PAUSE_KEY = 'surveyPaused';
+    const PAUSE_TS_KEY = 'surveyPausedTs';
     const CHANNEL_NAME = 'survey-control';
     const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
 
@@ -160,11 +158,12 @@
     function isPaused(){ return localStorage.getItem(PAUSE_KEY) === 'true'; }
     function setPaused(flag){
       localStorage.setItem(PAUSE_KEY, flag ? 'true' : 'false');
+      localStorage.setItem(PAUSE_TS_KEY, String(Date.now())); // bump timestamp to trigger pollers
       if (channel) channel.postMessage({ type:'PAUSE_STATE', paused: !!flag });
-      renderAdmin();
+      render();
     }
 
-    function renderAdmin(){
+    function render(){
       const paused = isPaused();
       toggle.classList.toggle('on', paused);
       statusText.textContent = paused ? 'Paused' : 'Live';
@@ -176,13 +175,14 @@
     resumeBtn.addEventListener('click', ()=> setPaused(false));
     clearBtn.addEventListener('click', ()=>{
       localStorage.removeItem(PAUSE_KEY);
+      localStorage.removeItem(PAUSE_TS_KEY);
       localStorage.removeItem('universitySurveyAnswers');
       localStorage.removeItem('universitySurveyState');
-      renderAdmin();
-      alert('Local pause flag and saved answers cleared.');
+      render();
+      alert('Local pause flag and saved answers cleared for this browser.');
     });
 
-    renderAdmin();
+    render();
   </script>
 </body>
 </html>
