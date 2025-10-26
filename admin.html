@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Survey Admin (Secure)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --color-primary:#7F112F; }
+    body { -webkit-font-smoothing:antialiased; }
+    .toggle { position: relative; width: 62px; height: 34px; background:#e5e7eb; border-radius:9999px; cursor:pointer; transition:background .2s; }
+    .toggle.on { background:#059669; }
+    .knob { position:absolute; top:3px; left:3px; width:28px; height:28px; background:white; border-radius:9999px; transition:left .2s; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .toggle.on .knob { left:31px; }
+
+    /* Login overlay */
+    #loginOverlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+    #loginOverlay.fadeOut {
+      opacity: 0;
+      visibility: hidden;
+    }
+    #loginBox {
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      width: 320px; padding: 1.5rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 p-6">
+
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <h2 class="text-lg font-bold text-center mb-4 text-[var(--color-primary)]">Admin Login</h2>
+      <div class="space-y-3">
+        <div>
+          <label class="text-sm font-semibold block mb-1" for="username">Username</label>
+          <input type="text" id="username" autocomplete="username" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
+        </div>
+        <div>
+          <label class="text-sm font-semibold block mb-1" for="password">Password</label>
+          <input type="password" id="password" autocomplete="current-password" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]">
+        </div>
+        <button id="loginBtn" type="button" class="w-full bg-[var(--color-primary)] text-white py-2 rounded font-semibold hover:bg-[#5A0D23] transition">Login</button>
+        <p id="errorMsg" class="text-red-600 text-sm text-center hidden mt-2">Invalid credentials</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN UI -->
+  <div id="adminUI" class="hidden">
+    <div class="max-w-xl mx-auto">
+      <header class="mb-6 flex items-center justify-between">
+        <h1 class="text-2xl font-extrabold text-[var(--color-primary)]">Survey Admin</h1>
+        <a href="index.html" class="text-sm text-blue-600 underline">Open survey</a>
+      </header>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-semibold mb-2">Voting Control</h2>
+          <p class="text-sm text-slate-500 mb-4">Toggle to pause or resume voting. This affects all open survey tabs on <strong>this device</strong>.</p>
+          <div class="flex items-center gap-4">
+            <div id="toggle" class="toggle"><div class="knob"></div></div>
+            <div>
+              <div class="text-sm font-semibold">Status: <span id="statusText">Unknown</span></div>
+              <div class="text-xs text-slate-500">Broadcasting via <code>BroadcastChannel</code> + <code>localStorage</code>.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t pt-4">
+          <h3 class="text-sm font-semibold mb-2">Quick Tools</h3>
+          <div class="flex gap-3">
+            <button id="resumeBtn" class="px-3 py-2 rounded bg-emerald-600 text-white text-sm">Resume</button>
+            <button id="pauseBtn" class="px-3 py-2 rounded bg-amber-600 text-white text-sm">Pause</button>
+            <button id="clearBtn" class="px-3 py-2 rounded bg-slate-200 text-slate-700 text-sm">Clear Local State</button>
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-500">
+          Note: “Clear Local State” only clears pause flag and local survey answers on this browser.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Login Protection =====
+    const USER = "imad";
+    const PASS = "imad123";
+    const LOGIN_KEY = "adminLogged";
+
+    const loginOverlay = document.getElementById("loginOverlay");
+    const loginBtn = document.getElementById("loginBtn");
+    const usernameField = document.getElementById("username");
+    const passwordField = document.getElementById("password");
+    const errorMsg = document.getElementById("errorMsg");
+    const adminUI = document.getElementById("adminUI");
+
+    function showLogin() {
+      loginOverlay.classList.remove("fadeOut");
+      loginOverlay.style.display = "flex";
+      adminUI.classList.add("hidden");
+    }
+    function showAdmin() {
+      adminUI.classList.remove("hidden");
+      loginOverlay.classList.add("fadeOut");
+      setTimeout(() => { loginOverlay.style.display = "none"; }, 400);
+    }
+
+    function isLoggedIn() {
+      try { return sessionStorage.getItem(LOGIN_KEY) === "true"; } catch { return false; }
+    }
+    function persistLogin() {
+      try { sessionStorage.setItem(LOGIN_KEY, "true"); } catch {}
+    }
+
+    function tryLogin() {
+      const user = usernameField.value.trim();
+      const pass = passwordField.value.trim();
+      if (user === USER && pass === PASS) {
+        errorMsg.classList.add("hidden");
+        persistLogin();
+        showAdmin();
+      } else {
+        errorMsg.classList.remove("hidden");
+      }
+    }
+
+    loginBtn.addEventListener("click", tryLogin);
+    [usernameField, passwordField].forEach(inp => {
+      inp.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          tryLogin();
+        }
+      });
+    });
+
+    if (isLoggedIn()) showAdmin(); else showLogin();
+
+    // ===== Admin Logic =====
+    const PAUSE_KEY = 'surveyPaused';
+    const CHANNEL_NAME = 'survey-control';
+    const channel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+    const toggle = document.getElementById('toggle');
+    const statusText = document.getElementById('statusText');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function isPaused(){ return localStorage.getItem(PAUSE_KEY) === 'true'; }
+    function setPaused(flag){
+      localStorage.setItem(PAUSE_KEY, flag ? 'true' : 'false');
+      if (channel) channel.postMessage({ type:'PAUSE_STATE', paused: !!flag });
+      renderAdmin();
+    }
+
+    function renderAdmin(){
+      const paused = isPaused();
+      toggle.classList.toggle('on', paused);
+      statusText.textContent = paused ? 'Paused' : 'Live';
+      statusText.className = paused ? 'text-amber-700' : 'text-emerald-700';
+    }
+
+    toggle.addEventListener('click', ()=> setPaused(!isPaused()));
+    pauseBtn.addEventListener('click', ()=> setPaused(true));
+    resumeBtn.addEventListener('click', ()=> setPaused(false));
+    clearBtn.addEventListener('click', ()=>{
+      localStorage.removeItem(PAUSE_KEY);
+      localStorage.removeItem('universitySurveyAnswers');
+      localStorage.removeItem('universitySurveyState');
+      renderAdmin();
+      alert('Local pause flag and saved answers cleared.');
+    });
+
+    renderAdmin();
+  </script>
+</body>
+</html>

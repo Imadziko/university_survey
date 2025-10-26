@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>University Workshop Feedback Survey</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --color-primary:#7F112F;
+      --color-secondary:#00A99D;
+      --color-background:#f8faff;
+      --color-card-bg:#ffffff;
+      --color-text:#1f2937;
+      --color-muted:#6b7280;
+    }
+    html, body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    h1, h2, h3, h4, h5, h6, .font-display { font-family: 'Lora', serif; }
+    body{ background:var(--color-background); color:var(--color-text); -webkit-font-smoothing:antialiased; line-height:1.6; min-height:100vh; }
+    .shadow-university{ box-shadow:0 10px 15px -3px rgba(0,0,0,.05),0 4px 6px -2px rgba(0,0,0,.05); }
+    .text-primary{color:var(--color-primary)} .bg-primary{background-color:var(--color-primary)}
+    .hover\:bg-primary-dark:hover{background-color:#5A0D23} .text-secondary{color:var(--color-secondary)}
+    .rating-pill{transition:all .2s ease; cursor:pointer;}
+    .rating-pill:hover{box-shadow:0 2px 5px rgba(127,17,47,.1); transform:translateY(-1px)}
+    .rating-pill.selected{background:var(--color-primary); border-color:var(--color-primary); color:#fff}
+    .rating-pill.selected .rating-value{color:#fff}
+    .modal-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);z-index:50}
+    .modal-content{background:#fff;border-radius:.75rem;padding:1.5rem;max-width:420px;width:90%;box-shadow:0 10px 25px rgba(0,0,0,.15)}
+    .success-checkmark{stroke-dasharray:100;stroke-dashoffset:100;animation:drawCheck .5s ease-out .4s forwards}
+    @keyframes drawCheck{to{stroke-dashoffset:0}}
+    /* Admin pause banner */
+    #pauseBanner { display:none; }
+    #pauseBanner.active { display:flex; }
+    .disabled-by-pause { pointer-events:none; opacity:0.5; }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row items-start justify-between border-b-4 border-primary pb-4 mb-4">
+      <div class="flex items-center space-x-4">
+        <svg class="w-10 h-10 text-primary" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3L1 9L12 15L23 9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M19 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 15V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div>
+          <h1 class="text-xl md:text-2xl font-extrabold text-primary font-display">Department of Mechanical Engineering</h1>
+          <p class="text-sm text-[var(--color-muted)]">8th Annual Industrial Management PhD Workshop Evaluation</p>
+        </div>
+      </div>
+
+      <div class="mt-4 md:mt-0 md:text-right">
+        <div class="text-3xl font-extrabold text-secondary font-display">
+          <span id="answeredCount">0</span>/<span id="totalCount">4</span>
+        </div>
+        <div class="text-sm font-semibold text-[var(--color-muted)] uppercase tracking-wider">Questions Answered</div>
+      </div>
+    </header>
+
+    <!-- Pause banner -->
+    <div id="pauseBanner" class="active items-center gap-3 bg-yellow-100 border border-yellow-300 text-yellow-800 rounded-lg px-4 py-3 mb-4">
+      <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 19.02A2 2 0 003.57 22h16.86a2 2 0 001.75-2.98L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="font-semibold">Voting is currently paused by the administrator.</span>
+    </div>
+
+    <!-- Main -->
+    <main id="mainContent">
+      <div id="questionCard" class="bg-[var(--color-card-bg)] p-6 md:p-10 rounded-xl shadow-university"></div>
+      <div id="reviewScreen" class="bg-[var(--color-card-bg)] p-6 md:p-10 rounded-xl shadow-university hidden"></div>
+      <div id="successScreen" class="hidden">
+        <div class="text-center py-16 bg-[var(--color-card-bg)] rounded-xl shadow-university">
+          <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500 flex items-center justify-center">
+            <svg class="success-checkmark w-10 h-10 text-white" viewBox="0 0 52 52" aria-hidden="true">
+              <path d="M14 27l7 7 16-16" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h2 class="text-3xl font-extrabold text-gray-800 mb-2 font-display">Submission Successful!</h2>
+          <p class="text-gray-500 max-w-md mx-auto mb-8">Thank you for providing your valuable feedback. Your input helps us continuously improve the quality of our academic workshops.</p>
+          <button id="restartBtn" class="px-6 py-3 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary-dark transition">Start a new response</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Nav -->
+    <nav id="navigation" class="flex items-center justify-between mt-8 gap-4">
+      <button id="backBtn" class="px-6 py-3 rounded-lg text-sm font-semibold border-2 border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition" disabled>← Previous</button>
+      <button id="nextBtn" class="px-6 py-3 rounded-lg text-sm font-semibold bg-primary text-white hover:bg-primary-dark transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>Next Question →</button>
+    </nav>
+  </div>
+
+  <!-- Modal -->
+  <div id="globalModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
+    <div class="modal-content">
+      <h3 id="modalTitle" class="text-xl font-bold mb-3 text-primary font-display"></h3>
+      <p id="modalMessage" class="text-gray-700 mb-4"></p>
+      <div class="flex justify-end">
+        <button id="modalCloseBtn" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Google Form -->
+  <form id="gform" method="POST" target="hidden_iframe"
+        action="https://docs.google.com/forms/d/e/1FAIpQLSeEw1c93eQdmkDDH1JJjcdn2aC4f0HkTXmyk9edh2Qffd4yKA/formResponse">
+    <input type="hidden" name="fvv" value="1">
+    <input type="hidden" name="pageHistory" value="0">
+  </form>
+  <iframe name="hidden_iframe" id="hidden_iframe" title="hidden submit" class="hidden"></iframe>
+
+  <script>
+    // =======================
+    // CONFIG
+    // =======================
+    const SUBMIT_ON_EACH_ANSWER = true;
+    const PARTIAL_SEND_MODE = 'single'; // 'single' or 'cumulative'
+
+    const QUESTIONS = [
+      { id: 'q1', title: 'How would you rate the clarity and organization of the workshop curriculum?', entry: '564269942' },
+      { id: 'q2', title: 'To what extent were the presenters knowledgeable and engaging?',             entry: '1195855513' },
+      { id: 'q3', title: 'How relevant were the topics to your current research agenda and professional development?', entry: '235678324' },
+      { id: 'q4', title: 'How effectively did the workshop facilitate networking and collaboration opportunities?',   entry: '995359866' }
+    ];
+
+    const RATINGS = [
+      { value: 5, emoji: '🌟', label: 'Outstanding (5/5)' },
+      { value: 4, emoji: '✅', label: 'Good (4/5)' },
+      { value: 3, emoji: '👍', label: 'Satisfactory (3/5)' },
+      { value: 2, emoji: '⚠️', label: 'Needs Improvement (2/5)' },
+      { value: 1, emoji: '❌', label: 'Poor (1/5)' }
+    ];
+
+    // =======================
+    // STATE
+    // =======================
+    const STORAGE_KEY = 'universitySurveyAnswers';
+    const STATE_KEY   = 'universitySurveyState';
+    const VERSION_KEY = 'universitySurveyVersion';
+    const CURRENT_VERSION = `v2-pausing-qcount-${QUESTIONS.length}`;
+
+    const PAUSE_KEY = 'surveyPaused'; // shared with admin.html
+    const CHANNEL_NAME = 'survey-control';
+
+    let current = 0, view = 'question';
+    let submitPhase = 'idle'; // 'idle' | 'partial' | 'final'
+    let answers = loadAnswers();
+
+    // =======================
+    // DOM
+    // =======================
+    const pauseBanner   = document.getElementById('pauseBanner');
+    const questionCard  = document.getElementById('questionCard');
+    const reviewScreen  = document.getElementById('reviewScreen');
+    const successScreen = document.getElementById('successScreen');
+    const navigation    = document.getElementById('navigation');
+    const backBtn       = document.getElementById('backBtn');
+    const nextBtn       = document.getElementById('nextBtn');
+    const answeredCount = document.getElementById('answeredCount');
+    const totalCount    = document.getElementById('totalCount');
+    const globalModal   = document.getElementById('globalModal');
+    const modalTitle    = document.getElementById('modalTitle');
+    const modalMessage  = document.getElementById('modalMessage');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+    const gform         = document.getElementById('gform');
+    const hiddenFrame   = document.getElementById('hidden_iframe');
+    const restartBtn    = document.getElementById('restartBtn');
+
+    // Broadcast channel for same-device multi-tab sync
+    const controlChannel = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+    if (controlChannel) {
+      controlChannel.onmessage = (ev) => {
+        if (ev && ev.data && ev.data.type === 'PAUSE_STATE') {
+          localStorage.setItem(PAUSE_KEY, ev.data.paused ? 'true' : 'false');
+          applyPauseState();
+        }
+      };
+    }
+
+    // React to storage changes (e.g., admin page on same device but different tab)
+    window.addEventListener('storage', (e)=>{
+      if (e.key === PAUSE_KEY) applyPauseState();
+    });
+
+    // =======================
+    // INIT
+    // =======================
+    totalCount.textContent = QUESTIONS.length;
+
+    // version guard
+    try {
+      const v = localStorage.getItem(VERSION_KEY);
+      if (v !== CURRENT_VERSION) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STATE_KEY);
+        localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
+        answers = {};
+      }
+    } catch {}
+
+    restoreState();
+    updateHeader();
+    applyPauseState();
+
+    if (view === 'review') showReview(false);
+    else if (view === 'success') showSuccess(false);
+    else showQuestion(false);
+
+    updateNav();
+
+    modalCloseBtn.addEventListener('click', hideModal);
+    globalModal.addEventListener('click', (e)=>{ if(e.target===globalModal) hideModal(); });
+    backBtn.addEventListener('click', handleBack);
+    nextBtn.addEventListener('click', handleNext);
+    hiddenFrame.addEventListener('load', onIframeLoaded);
+    restartBtn.addEventListener('click', resetSurvey);
+    window.addEventListener('beforeunload', () => saveState());
+
+    // =======================
+    // RENDER
+    // =======================
+    function renderQuestion(){
+      const q = QUESTIONS[current];
+      const selected = answers[q.id];
+
+      const disabledClass = isPaused() ? 'disabled-by-pause' : '';
+
+      questionCard.innerHTML = `
+        <div class="flex flex-col md:flex-row gap-8 items-start ${disabledClass}">
+          <div class="md:w-1/3 flex-shrink-0">
+            <div class="text-6xl font-extrabold text-secondary font-display">${current + 1}</div>
+            <p class="text-sm font-semibold text-primary mt-2 uppercase tracking-widest">Question ${current + 1} of ${QUESTIONS.length}</p>
+          </div>
+          <div class="md:w-2/3 w-full">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-6 font-display">${q.title}</h2>
+            <div class="flex flex-col space-y-3" role="radiogroup" aria-label="Rating options">
+              ${RATINGS.map(r => `
+                <button
+                  class="rating-pill p-4 border-2 border-gray-200 rounded-lg flex items-center justify-between bg-white ${selected===r.value ? 'selected':''}"
+                  data-value="${r.value}"
+                  role="radio"
+                  aria-checked="${selected===r.value}"
+                  aria-label="${r.label}"
+                  ${isPaused() ? 'disabled' : ''}
+                >
+                  <div class="flex items-center space-x-4">
+                    <span class="text-2xl" aria-hidden="true">${r.emoji}</span>
+                    <span class="text-base font-medium">${r.label}</span>
+                  </div>
+                  <span class="rating-value text-lg font-bold text-[var(--color-muted)]">${r.value}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (!isPaused()) {
+        questionCard.querySelectorAll('.rating-pill').forEach(pill=>{
+          pill.addEventListener('click', ()=>{
+            const v = Number(pill.dataset.value);
+            const qinfo = QUESTIONS[current];
+            saveAnswer(qinfo.id, v);
+
+            if (SUBMIT_ON_EACH_ANSWER) {
+              if (PARTIAL_SEND_MODE === 'single') {
+                submitPartial({ [qinfo.id]: v });
+              } else {
+                const payload = {};
+                QUESTIONS.forEach(q => { if (answers[q.id] !== undefined) payload[q.id] = answers[q.id]; });
+                submitPartial(payload);
+              }
+            }
+
+            renderQuestion();
+            updateNav();
+            saveState();
+          });
+        });
+      }
+    }
+
+    function renderReview(){
+      reviewScreen.innerHTML = `
+        <div class="text-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800 mb-1 font-display">Final Review</h2>
+          <p class="text-[var(--color-muted)]">One last look before you submit your valuable feedback.</p>
+        </div>
+        <div class="space-y-4">
+          ${QUESTIONS.map((q, i) => {
+            const val = answers[q.id];
+            const rating = RATINGS.find(r => r.value === val);
+            const statusClass = rating ? (rating.value >= 4 ? 'text-green-600' : (rating.value >= 3 ? 'text-yellow-600' : 'text-red-600')) : 'text-gray-500';
+            return `
+              <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg transition hover:bg-gray-100">
+                <div class="flex-1 min-w-0 pr-4 mb-2 md:mb-0">
+                  <div class="text-xs font-semibold uppercase text-primary mb-1">Q${i+1}</div>
+                  <div class="font-medium text-gray-700">${q.title}</div>
+                </div>
+                <div class="flex items-center space-x-4">
+                  <div class="font-bold ${statusClass} flex items-center space-x-1">
+                    <span aria-hidden="true">${rating ? rating.emoji : '❓'}</span>
+                    <span>${rating ? rating.label.split(' ')[0] : 'N/A'}</span>
+                  </div>
+                  <button class="btn-edit text-xs font-semibold text-primary hover:text-[rgba(127,17,47,0.9)] transition border-b border-dashed border-[color:var(--color-primary)]/50" data-index="${i}">Edit</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+
+      reviewScreen.querySelectorAll('.btn-edit').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const index = Number(btn.dataset.index);
+          view = 'question';
+          current = clampIndex(index);
+          showQuestion();
+          updateNav();
+          questionCard.scrollIntoView({behavior:'smooth', block:'start'});
+        });
+      });
+    }
+
+    function showQuestion(save=true){ view='question'; questionCard.classList.remove('hidden'); reviewScreen.classList.add('hidden'); successScreen.classList.add('hidden'); navigation.classList.remove('hidden'); renderQuestion(); if(save) saveState(); }
+    function showReview(save=true){ view='review'; questionCard.classList.add('hidden'); reviewScreen.classList.remove('hidden'); successScreen.classList.add('hidden'); navigation.classList.remove('hidden'); renderReview(); updateNav(); if(save) saveState(); }
+    function showSuccess(save=true){ view='success'; questionCard.classList.add('hidden'); reviewScreen.classList.add('hidden'); navigation.classList.add('hidden'); successScreen.classList.remove('hidden'); if(save) saveState(); }
+
+    // =======================
+    // NAV + HEADER
+    // =======================
+    function updateHeader(){ answeredCount.textContent = Object.keys(answers).length; totalCount.textContent = QUESTIONS.length; }
+    function updateNav(){
+      const allAnswered = Object.keys(answers).length === QUESTIONS.length;
+      const canGoBack = (current > 0) || (view === 'review');
+      const currentAnswer = answers[QUESTIONS[current]?.id];
+      const canProceed = (view === 'review') || currentAnswer !== undefined;
+      const isLast = current === QUESTIONS.length - 1;
+
+      backBtn.disabled = !canGoBack || isPaused();
+      nextBtn.disabled = !canProceed || submitPhase === 'final' || isPaused();
+      backBtn.textContent = (view === 'review') ? '← Back to Questions' : '← Previous';
+
+      if (view === 'review'){
+        nextBtn.textContent = 'Submit Survey';
+        nextBtn.classList.remove('bg-primary','hover:bg-primary-dark');
+        nextBtn.classList.add('bg-green-600','hover:bg-green-700');
+      } else if (isLast){
+        nextBtn.textContent = allAnswered ? 'Review & Submit →' : 'Review Answers →';
+        nextBtn.classList.remove('bg-green-600','hover:bg-green-700');
+        nextBtn.classList.add('bg-primary','hover:bg-primary-dark');
+        nextBtn.disabled = !allAnswered || isPaused();
+      } else {
+        nextBtn.textContent = 'Next Question →';
+        nextBtn.classList.remove('bg-green-600','hover:bg-green-700');
+        nextBtn.classList.add('bg-primary','hover:bg-primary-dark');
+      }
+    }
+
+    function handleBack(){
+      if (isPaused()) return;
+      if (view === 'review') { showQuestion(); }
+      else if (current > 0) { current = clampIndex(current - 1); renderQuestion(); saveState(); }
+      updateNav();
+      questionCard.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    function handleNext(){
+      if (isPaused()) return;
+      if (view === 'review'){
+        submitFinal();
+      } else if (current < QUESTIONS.length - 1){
+        current = clampIndex(current + 1);
+        renderQuestion();
+        updateNav();
+        saveState();
+        questionCard.scrollIntoView({behavior:'smooth', block:'start'});
+      } else if (Object.keys(answers).length === QUESTIONS.length){
+        showReview();
+      }
+    }
+
+    // =======================
+    // STORAGE
+    // =======================
+    function loadAnswers(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {}; } catch{ return {}; } }
+    function saveAnswer(qid, val){ answers[qid] = val; localStorage.setItem(STORAGE_KEY, JSON.stringify(answers)); updateHeader(); }
+    function clearAnswers(){ try { localStorage.removeItem(STORAGE_KEY); } catch {} answers = {}; }
+    function restoreState(){
+      try{
+        const raw = localStorage.getItem(STATE_KEY);
+        if (!raw) return;
+        const st = JSON.parse(raw);
+        if (typeof st.current === 'number') current = clampIndex(st.current);
+        if (st.view === 'review' || st.view === 'success' || st.view === 'question') view = st.view;
+      } catch {}
+    }
+    function saveState(){ const state = { current: clampIndex(current), view }; try{ localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch {} }
+
+    // =======================
+    // SUBMISSION HELPERS
+    // =======================
+    function rebuildFormInputs(payloadByQuestionId){
+      gform.querySelectorAll("input[name^='entry.']").forEach(n=>n.remove());
+      Object.entries(payloadByQuestionId).forEach(([qid, val])=>{
+        const qinfo = QUESTIONS.find(q=>q.id===qid);
+        if (!qinfo) return;
+        const inp = document.createElement('input');
+        inp.type = 'hidden';
+        inp.name = `entry.${qinfo.entry}`;
+        inp.value = val;
+        gform.appendChild(inp);
+      });
+    }
+
+    function submitPartial(payloadByQuestionId){
+      submitPhase = 'partial';
+      rebuildFormInputs(payloadByQuestionId);
+      gform.submit();
+    }
+
+    function submitFinal(){
+      const missing = QUESTIONS.filter(q => answers[q.id] === undefined);
+      if (missing.length){
+        showModal('Incomplete Survey', `Please answer all questions before submitting. You are missing ${missing.length} question(s).`);
+        return;
+      }
+      submitPhase = 'final';
+      const payload = {};
+      QUESTIONS.forEach(q=> payload[q.id] = answers[q.id]);
+      rebuildFormInputs(payload);
+
+      nextBtn.innerHTML = '<span class="animate-spin inline-block h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></span> Submitting...';
+      nextBtn.disabled = true;
+
+      gform.submit();
+
+      setTimeout(()=>{
+        if (submitPhase === 'final'){
+          submitPhase = 'idle';
+          updateNav();
+          showModal('Submission Timeout', 'We could not confirm the submission. Please check your internet connection and try again.');
+        }
+      }, 10000);
+    }
+
+    function onIframeLoaded(){
+      if (submitPhase === 'final'){
+        submitPhase = 'idle';
+        clearAnswers();
+        updateHeader();
+        showSuccess();
+        saveState();
+      }
+    }
+
+    // =======================
+    // PAUSE/RESUME
+    // =======================
+    function isPaused(){
+      try { return localStorage.getItem(PAUSE_KEY) === 'true'; } catch { return false; }
+    }
+    function applyPauseState(){
+      const paused = isPaused();
+      pauseBanner.classList.toggle('active', paused);
+      updateNav();
+      renderQuestion();
+    }
+
+    // =======================
+    // MODAL + UTILS
+    // =======================
+    function showModal(title, message){ modalTitle.textContent = title; modalMessage.textContent = message; globalModal.classList.remove('hidden'); }
+    function hideModal(){ globalModal.classList.add('hidden'); }
+    function clampIndex(i){ if (Number.isNaN(i)) return 0; return Math.max(0, Math.min(QUESTIONS.length - 1, i)); }
+    function resetSurvey(){
+      clearAnswers();
+      current = 0; view = 'question'; submitPhase = 'idle';
+      updateHeader(); showQuestion(); updateNav(); window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
