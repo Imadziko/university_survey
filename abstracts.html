@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{
-      --color-primary:#2AB67D; /* green accent like the reference image */
+      --color-primary:#7F112F; /* accent */
       --color-dark:#0f172a;
       --color-muted:#64748b;
       --card:#ffffff;
@@ -32,33 +32,43 @@
     .tab-btn{ transition: transform .1s ease; }
     .tab-btn:active{ transform: translateY(1px) scale(.98); }
     .section-cap{ height: 3px; width: 28px; border-radius: 9999px; background: var(--color-primary); }
-
     .break-card{ background:#fff7ed; border:1px dashed var(--line); }
     .break-badge{ font-size:.65rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#b45309; }
     .time-badge{ font-size:.75rem; color:#334155;}
-
-  
-    .session-sub {
-      font-size: 1rem !important;
-      font-weight: 600;
-      color: var(--color-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      border-left: 3px solid var(--line);
-      padding-left: 0.5rem;
-      margin-top: 0.4rem;
-      display: inline-block;
-    }
-
-</style>
+    .session-sub { font-size: 1rem !important; font-weight: 600; color: var(--color-muted);
+      text-transform: uppercase; letter-spacing: 0.05em; border-left: 3px solid var(--line);
+      padding-left: 0.5rem; margin-top: 0.4rem; display: inline-block; }
+  </style>
 </head>
 <body>
   <!-- Top -->
-  <header class="pt-10 pb-6 text-center">
+  <header class="pt-8 pb-6">
     <div class="max-w-6xl mx-auto px-4">
-      <div class="section-cap mx-auto mb-3"></div>
-      <h1 class="font-display font-extrabold text-2xl sm:text-3xl tracking-tight">EVENT SCHEDULE</h1>
-      <p class="mt-2 text-sm text-[var(--color-muted)]">Browse by <strong>Session 1–4</strong> and expand cards to read the abstracts.</p>
+      <!-- Mobile: logos row -->
+      <div class="flex items-center justify-between sm:hidden mb-2">
+        <img src="Logo_ETSI.png" alt="ETSI logo" class="w-12 h-auto" loading="lazy">
+        <img src="US.png" alt="Universidad de Sevilla logo" class="w-12 h-auto" loading="lazy">
+      </div>
+      <!-- Desktop: 3-column grid (logo - title - logo) -->
+      <div class="hidden sm:grid sm:grid-cols-3 sm:items-center">
+        <div class="justify-self-start">
+          <img src="Logo_ETSI.png" alt="ETSI logo" class="w-16 md:w-20 h-auto" loading="lazy">
+        </div>
+        <div class="text-center">
+          <div class="section-cap mx-auto mb-3"></div>
+          <h1 class="font-display font-extrabold text-2xl sm:text-3xl tracking-tight">EVENT SCHEDULE</h1>
+          <p class="mt-2 text-sm text-[var(--color-muted)]">Browse by <strong>Session 1–4</strong> and expand cards to read the abstracts.</p>
+        </div>
+        <div class="justify-self-end">
+          <img src="US.png" alt="Universidad de Sevilla logo" class="w-16 md:w-20 h-auto" loading="lazy">
+        </div>
+      </div>
+      <!-- Mobile: title under logos -->
+      <div class="text-center sm:hidden">
+        <div class="section-cap mx-auto mb-3"></div>
+        <h1 class="font-display font-extrabold text-2xl tracking-tight">EVENT SCHEDULE</h1>
+        <p class="mt-2 text-sm text-[var(--color-muted)]">Browse by <strong>Session 1–4</strong> and expand cards to read the abstracts.</p>
+      </div>
     </div>
   </header>
 
@@ -117,7 +127,7 @@
     const yearEl = document.getElementById('year');
     yearEl.textContent = new Date().getFullYear();
 
-    // Map of sessions with subtitle (optional theme) and items from the PDF
+    // Map of sessions with subtitle (optional theme) and items from the original file
     const sessions = [
       { id:1, subtitle:'Materials & Mechanics', items:[
         {n:1, title:'Application of a multiscale atomistic model to the study of copper segregation in polycrystalline aluminum structures', author:'José Manuel Recio López', abstract:'Model with atomistic resolution to study Cu segregation at Al grain boundaries using Diffusive Molecular Dynamics and Angular Dependent Potentials (ADP), enabling time-scale bridging beyond classical MD.'},
@@ -155,7 +165,6 @@
     ];
     const sessionTimes = {"1": "09:15–10:45", "2": "11:15–13:00", "3": "14:30–16:00", "4": "16:30–18:00"};
     const breaksData = [{"after": 1, "label": "Coffee break", "time": "10:45–11:15"}, {"after": 2, "label": "Lunch break", "time": "13:00–14:30"}, {"after": 3, "label": "Coffee break", "time": "16:00–16:30"}];
-
 
     // Render sessions
     const columns = document.getElementById('columns');
