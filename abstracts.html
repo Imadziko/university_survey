@@ -11,7 +11,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{
-      --color-primary:#7F112F; /* green accent like the reference image */
+      --color-primary:#2AB67D; /* green accent like the reference image */
       --color-dark:#0f172a;
       --color-muted:#64748b;
       --card:#ffffff;
@@ -32,7 +32,25 @@
     .tab-btn{ transition: transform .1s ease; }
     .tab-btn:active{ transform: translateY(1px) scale(.98); }
     .section-cap{ height: 3px; width: 28px; border-radius: 9999px; background: var(--color-primary); }
-  </style>
+
+    .break-card{ background:#fff7ed; border:1px dashed var(--line); }
+    .break-badge{ font-size:.65rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#b45309; }
+    .time-badge{ font-size:.75rem; color:#334155;}
+
+  
+    .session-sub {
+      font-size: 1rem !important;
+      font-weight: 600;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-left: 3px solid var(--line);
+      padding-left: 0.5rem;
+      margin-top: 0.4rem;
+      display: inline-block;
+    }
+
+</style>
 </head>
 <body>
   <!-- Top -->
@@ -135,6 +153,9 @@
         {n:6, title:'FEM implementation of the minimization of the total energy subjected to a stress condition to predict delamination', author:'José Lis Guzmán López', abstract:'General CCFFM+LEBIM formulation within FEM based on PMTESC to predict delamination.'},
       ]},
     ];
+    const sessionTimes = {"1": "09:15–10:45", "2": "11:15–13:00", "3": "14:30–16:00", "4": "16:30–18:00"};
+    const breaksData = [{"after": 1, "label": "Coffee break", "time": "10:45–11:15"}, {"after": 2, "label": "Lunch break", "time": "13:00–14:30"}, {"after": 3, "label": "Coffee break", "time": "16:00–16:30"}];
+
 
     // Render sessions
     const columns = document.getElementById('columns');
@@ -146,7 +167,8 @@
       sessions.forEach(sess => {
         const col = colTemplate.content.cloneNode(true);
         col.querySelector('.session-id').textContent = sess.id;
-        col.querySelector('.session-sub').textContent = sess.subtitle || '';
+        const subt = sess.subtitle ? sess.subtitle + (sessionTimes[sess.id] ? ' · ' + sessionTimes[sess.id] : '') : (sessionTimes[sess.id] || '');
+        col.querySelector('.session-sub').textContent = subt;
         const tl = col.querySelector('.timeline');
         sess.items.forEach(it => {
           const item = itemTemplate.content.cloneNode(true);
@@ -157,6 +179,27 @@
           item.querySelector('.abstract').textContent = it.abstract;
           tl.appendChild(item);
         });
+        // Append break card if applicable
+        const br = (breaksData || []).find(b => b.after === sess.id);
+        if (br){
+          const wrap = document.createElement('div');
+          wrap.className = 'relative';
+          wrap.innerHTML = `
+            <span class="dot" style="top:.6rem"></span>
+            <div class="ml-6">
+              <div class="text-[10px] uppercase tracking-wider text-[var(--color-muted)] font-semibold mb-1">
+                <span class="block leading-tight">—</span>
+              </div>
+              <div class="card break-card p-4 shadow-soft">
+                <div class="flex items-center justify-between">
+                  <span class="break-badge">` + br.label + `</span>
+                  <span class="time-badge">` + br.time + `</span>
+                </div>
+                <p class="mt-1 text-xs text-[var(--color-muted)]">Pause between Session ` + sess.id + ` and Session ` + (sess.id+1) + `.</p>
+              </div>
+            </div>`;
+          tl.appendChild(wrap);
+        }
         columns.appendChild(col);
       });
     }
