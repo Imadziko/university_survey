@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Industrial Management PhD Workshop — Sessions & Abstracts</title>
+  <meta name="description" content="Program schedule with sessions and abstracts for the Industrial Management PhD Workshop.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Lora:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --color-primary:#7F112F; /* green accent like the reference image */
+      --color-dark:#0f172a;
+      --color-muted:#64748b;
+      --card:#ffffff;
+      --bg:#f8fafc;
+      --line:#e2e8f0;
+    }
+    html, body { font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Lora', serif; }
+    body { background: var(--bg); color: var(--color-dark); -webkit-font-smoothing: antialiased; }
+    .shadow-soft{ box-shadow: 0 10px 20px -10px rgba(0,0,0,.18), 0 2px 6px -2px rgba(0,0,0,.08); }
+    .pill{ border-radius: 9999px; border:1px solid var(--line); padding:.35rem .7rem; font-size:.8rem; background:#fff; white-space:nowrap;}
+    .pill.active{ background: var(--color-primary); color:#fff; border-color: var(--color-primary); }
+    .timeline{ position: relative; }
+    .timeline::before{ content:""; position:absolute; left:1rem; top:0; bottom:0; width:2px; background: var(--line); }
+    .dot{ position:absolute; left:0.875rem; width:0.5rem; height:0.5rem; border-radius:9999px; background:var(--line); border:2px solid #fff; box-shadow:0 0 0 2px var(--bg); }
+    .dot.active{ background: var(--color-primary); }
+    .card{ background:var(--card); border:1px solid var(--line); border-radius:.75rem; }
+    .tab-btn{ transition: transform .1s ease; }
+    .tab-btn:active{ transform: translateY(1px) scale(.98); }
+    .section-cap{ height: 3px; width: 28px; border-radius: 9999px; background: var(--color-primary); }
+  </style>
+</head>
+<body>
+  <!-- Top -->
+  <header class="pt-10 pb-6 text-center">
+    <div class="max-w-6xl mx-auto px-4">
+      <div class="section-cap mx-auto mb-3"></div>
+      <h1 class="font-display font-extrabold text-2xl sm:text-3xl tracking-tight">EVENT SCHEDULE</h1>
+      <p class="mt-2 text-sm text-[var(--color-muted)]">Browse by <strong>Session 1–4</strong> and expand cards to read the abstracts.</p>
+    </div>
+  </header>
+
+  <!-- Tabs (mobile only) -->
+  <div class="max-w-6xl mx-auto px-4 md:hidden">
+    <div class="inline-flex gap-2 bg-white border border-slate-200 rounded-lg p-1 shadow-soft overflow-x-auto">
+      <button class="tab-btn pill active" data-session="1">SESSION 1</button>
+      <button class="tab-btn pill" data-session="2">SESSION 2</button>
+      <button class="tab-btn pill" data-session="3">SESSION 3</button>
+      <button class="tab-btn pill" data-session="4">SESSION 4</button>
+    </div>
+  </div>
+
+  <!-- Columns -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <div id="columns" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- JS will render Session 1..4 columns -->
+    </div>
+  </main>
+
+  <footer class="py-8 text-center text-xs text-[var(--color-muted)]">
+    &copy; <span id="year"></span> Department of Mechanical Engineering — Industrial Management PhD Workshop
+  </footer>
+
+  <template id="col-template">
+    <section class="col">
+      <h2 class="font-display font-extrabold text-lg mb-1">SESSION <span class="session-id"></span></h2>
+      <p class="text-xs text-[var(--color-muted)] mb-3"><span class="session-sub"></span></p>
+      <div class="section-cap mb-4"></div>
+      <div class="timeline space-y-5 pl-8">
+        <!-- items here -->
+      </div>
+    </section>
+  </template>
+
+  <template id="item-template">
+    <div class="relative">
+      <span class="dot active" style="top:.6rem"></span>
+      <div class="ml-6">
+        <div class="text-[10px] uppercase tracking-wider text-[var(--color-muted)] font-semibold mb-1">
+          <span class="block leading-tight">S<span class="sid"></span>.<span class="num"></span></span>
+        </div>
+        <div class="card p-4 shadow-soft">
+          <h3 class="text-sm sm:text-base font-semibold leading-snug title"></h3>
+          <p class="mt-1 text-xs text-[var(--color-muted)] author"></p>
+          <details class="mt-2 group">
+            <summary class="text-xs font-semibold text-[var(--color-primary)] cursor-pointer">Abstract</summary>
+            <p class="mt-2 text-sm leading-relaxed abstract"></p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const yearEl = document.getElementById('year');
+    yearEl.textContent = new Date().getFullYear();
+
+    // Map of sessions with subtitle (optional theme) and items from the PDF
+    const sessions = [
+      { id:1, subtitle:'Materials & Mechanics', items:[
+        {n:1, title:'Application of a multiscale atomistic model to the study of copper segregation in polycrystalline aluminum structures', author:'José Manuel Recio López', abstract:'Model with atomistic resolution to study Cu segregation at Al grain boundaries using Diffusive Molecular Dynamics and Angular Dependent Potentials (ADP), enabling time-scale bridging beyond classical MD.'},
+        {n:2, title:'EX VIVO CHARACTERIZATION OF BONE REGENERATION IN OSTEOPOROTIC CONDITIONS', author:'Juan José Toscano Angulo', abstract:'Ex vivo characterization of woven and cortical bone in an osteoporotic sheep metatarsus model to assess the influence of osteoporosis on distraction osteogenesis.'},
+        {n:3, title:'Effect of hypoxic senescent secretome on the mechanobiology of lung cancer cells', author:'Raquel Ruiz-Mateos Brea', abstract:'Wrinkling-to-draping transitions in an elastic disc under uniform pressure, initially described by Föppl–von Kármán equations before large-deformation nonlinearities dominate.'},
+        {n:4, title:'Tool Design and Development for the Environmental Management of Human-Impacted Estuarine Systems', author:'Guillermo Martín Llanes', abstract:'Idealised-geometry numerical tool to evaluate human-induced modifications (river regulation, reclamation, dredging) on salinity dynamics; calibrated to the Guadiana Estuary.'},
+        {n:5, title:'A Coupled Phase Field-Gradient Plasticity Framework for Mesh-Independent Ductile Fracture Modelling', author:'Pablo Olivares Rodríguez', abstract:'Couples phase-field fracture with gradient-enhanced plasticity via micromorphic regularisation to remove mesh dependence in softening regimes.'},
+        {n:6, title:'Generalized Spherical Harmonics for Orientation Averaging and Optimal Texture Design in Coupled Electro-Mechanical Polycrystals', author:'Julieta Lorena Buroni', abstract:'Closed-form orientation averaging extended from SO(3) to O(3) to cover all 32 point groups and odd-rank tensors such as piezoelectricity.'},
+      ]},
+      { id:2, subtitle:'Operations & Mechanics', items:[
+        {n:1, title:'Advanced Systems in Last Mile Logistics', author:'José Carlos Hernández Fuentemilla', abstract:'Adoption and maturity of 15 technologies (UAVs, AVs, robotics, IoT) via literature, expert surveys, and field studies; guidance for regulators and companies.'},
+        {n:2, title:'Wrinkles to Drapes in Elastic Discs', author:'Emiliano González Herrer', abstract:'From infinitesimal wrinkles to finite folds under uniform pressure; early regime governed by FvK equations.'},
+        {n:3, title:'Heuristics for the green limited-buffer permutation flowshop scheduling problem to minimise makespan', author:'Belén Navarro García', abstract:'Three-phase heuristic: energy-speed ratio for speed assignment, memory-based constructive sequencing, and local search; superior results on benchmarks.'},
+        {n:4, title:'On the thermomechanical behaviour of polymeric sheets at localized necking', author:'David Palomo Vázquez', abstract:'Formability assessment of polymeric sheets at necking/fracture using DIC-inspired methods adapted from metal forming.'},
+        {n:5, title:'On multi site fibre–matrix interface debonding failure prediction', author:'José Miguel Pimentel Medina', abstract:'PMTE-SC based computational approach for debonding and 3D interlaminar failure; 2D/3D implementations in Abaqus and Python.'},
+        {n:6, title:'Enhancing operational efficiency and reliability in manufacturing and logistics through machine learning: a dual industry study', author:'Kenny Jesús Flores Huamán', abstract:'Gradient-boosting (XGBoost/LightGBM) outperforms deep learning on tabular industrial data for accuracy and efficiency.'},
+        {n:7, title:'Mechatronic Systems and Deployable Structures for Space, Defense, and Civil Applications', author:'Carlos José García Mora', abstract:'Robotic grasping, deployable domes, constant-force mechanisms, space HDRMs; modelling, optimisation, prototyping and experimental validation (inc. JPL stay).'},
+      ]},
+      { id:3, subtitle:'Energy & Simulation', items:[
+        {n:1, title:'Optimal Inverter Loading Ratio for Utility-Scale PV in Europe: A Techno-Economic and Regional Comparison', author:'Daniel Lugo Laguna', abstract:'Framework with one-minute irradiance and country-specific finance; optimal ILR varies by location (~1.4–1.8) driven mainly by finance.'},
+        {n:2, title:'Fast-ion losses distribution in the ASDEX Upgrade first wall', author:'Javier Hidalgo Salaverri', abstract:'Integrated model to determine heat loads on plasma-exposed components; applied to guide diagnostic design and operation.'},
+        {n:3, title:'Modelado y simulación de servicios de urgencias: análisis y mejora del rendimiento en hospitales', author:'Irene Domínguez Galán', abstract:'Simulación de servicios de urgencias en hospitales españoles para mejorar eficiencia y capacidad de respuesta.'},
+        {n:4, title:'Lightweight Mechanics for Future Silicon Tracking Systems', author:'Roberto Prieto García', abstract:'Advanced materials and lightweight technologies for HL-LHC/FCC silicon trackers: supports, cooling and integration for large active areas.'},
+        {n:5, title:'Synthesis, characterization and simulation of UpConversion Epoxy–Graphene Nanocomposites', author:'Jevet Emiliano Damixi López Campos', abstract:'Photoluminescent epoxy nanocomposites with UCNPs (Yb/Er/ZrO2; Yb/Er/NaYF4) and graphene; PL tuning vs stiffness at low loadings.'},
+        {n:6, title:'Structural Topology Optimization and the Image Manifold Hypothesis', author:'Raúl Llamas Sandín', abstract:'Theoretical interpretation of a diffusion operator via analogies to CNNs and denoising diffusion probabilistic models using velocity-field formulations.'},
+      ]},
+      { id:4, subtitle:'Manufacturing & Design', items:[
+        {n:1, title:'Axial Computed Tomography: tool to improve additive manufacturing value chain in the production of aerospace components', author:'Carlos Galleguillos Riobóo', abstract:'Computational tool to simulate CT inspections and assess defect impacts in metal AM, validated with static and fatigue analyses.'},
+        {n:2, title:'Integration of Control Theory in Thermal Digital Twins for Pavement Systems', author:'Javier Álvarez Pozo', abstract:'Adaptive control integrated into thermal digital twins of pavements to maintain accurate tracking under variations.'},
+        {n:3, title:'Development of advanced methodologies for assessing the morphodynamic response of bays and estuaries to extreme events', author:'Carlos Rubio González', abstract:'Delft3D-based methodology to evaluate resilience under waves, meteo-tides, discharge, and winds; applications to Guadiana Estuary and Bay of Cádiz.'},
+        {n:4, title:'V-Notch Analysis: Experimental, Analytical, and Numerical Perspective', author:'Adelaida Macías Martínez', abstract:'CCFFM + BEM used to study maximum load vs notch angle in brittle PMMA TPB; experiments show local minimum for angles >30–40°.'},
+        {n:5, title:'Role of matrix effects and interfacial integrity on the electromechanical performance of KNN-based piezocomposites', author:'Francisco Javier Cañamero Torres', abstract:'Effects of porosity, auxeticity, and interfacial integrity on electromechanical response of KNN-BNZH/polyethylene composites (0-3 & 1-3).'},
+        {n:6, title:'FEM implementation of the minimization of the total energy subjected to a stress condition to predict delamination', author:'José Lis Guzmán López', abstract:'General CCFFM+LEBIM formulation within FEM based on PMTESC to predict delamination.'},
+      ]},
+    ];
+
+    // Render sessions
+    const columns = document.getElementById('columns');
+    const colTemplate = document.getElementById('col-template');
+    const itemTemplate = document.getElementById('item-template');
+
+    function render(){
+      columns.innerHTML = '';
+      sessions.forEach(sess => {
+        const col = colTemplate.content.cloneNode(true);
+        col.querySelector('.session-id').textContent = sess.id;
+        col.querySelector('.session-sub').textContent = sess.subtitle || '';
+        const tl = col.querySelector('.timeline');
+        sess.items.forEach(it => {
+          const item = itemTemplate.content.cloneNode(true);
+          item.querySelector('.sid').textContent = String(sess.id);
+          item.querySelector('.num').textContent = String(it.n);
+          item.querySelector('.title').textContent = it.title;
+          item.querySelector('.author').textContent = it.author;
+          item.querySelector('.abstract').textContent = it.abstract;
+          tl.appendChild(item);
+        });
+        columns.appendChild(col);
+      });
+    }
+    render();
+
+    // Mobile tabs behavior: show one session at a time on small screens
+    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+    function applyMobileView(){
+      if (window.matchMedia('(min-width: 768px)').matches){
+        Array.from(columns.children).forEach(el => el.classList.remove('hidden'));
+        return;
+      }
+      const active = tabs.find(t => t.classList.contains('active'))?.dataset.session || '1';
+      Array.from(columns.children).forEach((el, idx) => {
+        el.classList.toggle('hidden', String(idx+1) !== active);
+      });
+    }
+    tabs.forEach(btn => btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyMobileView();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }));
+    window.addEventListener('resize', applyMobileView);
+    applyMobileView();
+  </script>
+</body>
+</html>
